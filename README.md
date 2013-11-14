@@ -1,4 +1,4 @@
 mssql-schema-dump
 =================
 
-Microsoft SQL Server  Schmema Dump
+Microsoft SQL Server  Schema Dump
