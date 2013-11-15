@@ -232,7 +232,7 @@ namespace MSSQLDump {
             Console.WriteLine( "     -c : Delete all files and folders from local path, defaults to false" );
             Console.WriteLine( "     -s : Also export statistics, defaults to false" );
             Console.WriteLine( "     -a : Use DAC to try decrypt encrypted objects, defaults to false" );
-            Console.WriteLine( "     -b : Comma seperated value of databases to export, defaults to empty string" );
+            Console.WriteLine( "     -b : Comma separated value of databases to export, defaults to empty string" );
             Console.ReadKey();
         }
         private static bool ReadArguments( string[] args ) {
