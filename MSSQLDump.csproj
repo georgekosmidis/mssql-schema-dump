@@ -7,8 +7,8 @@
     <ProjectGuid>{3452B7D9-0DA3-41B0-84B1-FFE470E023E6}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MSQLDump</RootNamespace>
-    <AssemblyName>MSQLDump</AssemblyName>
+    <RootNamespace>MSSQLDump</RootNamespace>
+    <AssemblyName>MSSQLDump</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>

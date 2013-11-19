@@ -1,4 +1,4 @@
-<h1>MS SQL schema dump v1</h1><br />
+<h1>MS SQL schema dump v1 Beta</h1><br />
 Exports MS SQL Server database schema, that includes:<br />
 <br />
 <b>DB</b><br />
