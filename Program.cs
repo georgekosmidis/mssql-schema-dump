@@ -222,7 +222,7 @@ namespace MSSQLDump {
 
         #region Helpers
         private static void WriteHelp() {
-            Console.WriteLine( "***MS SQL schema dump v1 Beta***" );
+            Console.WriteLine( "***MS SQL schema dump v1 Beta (http://github.com/georgekosmidis/mssql-schema-dump)***" );
             Console.WriteLine( "Exports MS SQL Server database schema, that includes:" );
             Console.WriteLine( "DB" );
             Console.WriteLine( "  Schema, User Types, User Table Types, Triggers, Full Text Catalogues," );
@@ -355,7 +355,8 @@ namespace MSSQLDump {
         private static string sqlComments( string db, string type, string name ) {
             var s = "--****************************************************" + Environment.NewLine;
             s += "--MS SQL schema dump v1 Beta" + Environment.NewLine;
-            s += "--George Kosmidis <gr.linkedin.com/in/georgekosmidis/>" + Environment.NewLine;
+            s += "--Latest Version on GitHub: http://github.com/georgekosmidis/mssql-schema-dump" + Environment.NewLine;
+            s += "--George Kosmidis <www.georgekosmidis.com>" + Environment.NewLine;
             s += "-------------------------------------------------------" + Environment.NewLine;
             s += "--DB: " + db + Environment.NewLine;
             s += "--" + type + ": " + name + Environment.NewLine;
