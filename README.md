@@ -13,8 +13,7 @@ Exports MS SQL Server database schema, that includes:<br />
 <br />
 <b>Usage:</b>
 <code>
-mssqldump -h data-source-host -u username -p password 
-       mssqldump [-d path/for/files] [-c] [-s] [-a] [-b DB1[,DB2[,DB3]]]<br />
+mssqldump -h data-source-host -u username -p password [-d path/for/files] [-c] [-s] [-a] [-b DB1[,DB2[,DB3]]]<br />
 </code>
 <br />
 Options:<br />
