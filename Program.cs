@@ -44,7 +44,7 @@ namespace MSSQLDump {
                 }
                 catch {
                     Console.WriteLine( "ERROR!" );
-                    Console.WriteLine( "DAC cannot be enabled, retry without the option but encrypted object will be omitted!" );
+                    Console.WriteLine( "DAC cannot be enabled, retry without the option but encrypted objects will be omitted!" );
                     return;
                 }
 
@@ -77,7 +77,7 @@ namespace MSSQLDump {
             foreach (var db in server.Databases.Cast<Database>().AsQueryable().Where( o => o.IsSystemObject == false )) {
                 if (db.IsSystemObject)
                     continue;
-                if (DBs.Count() > 0 && !DBs.Contains( db.Name ))
+                if (DBs.Count() > 0 && !DBs.Contains( db.Name.ToLower() ))
                     continue;
                 var dbPath = csFile.CreateFolder( SavePath, pathify( db.Name ) );
 
@@ -282,7 +282,7 @@ namespace MSSQLDump {
                             continue;
                         case "-b":
                             if (args[i + 1].Substring( 0, 1 ) != "-") {
-                                DBs = args[i + 1].Split( ',' ).ToList<string>();
+                                DBs = args[i + 1].Split( ',' ).ToList<string>().ConvertAll( d => d.ToLower() );
                             }
                             continue;
                     }
