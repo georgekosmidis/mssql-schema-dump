@@ -36,7 +36,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.CSharp">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.SqlServer.ConnectionInfo, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\Microsoft SQL Server\110\SDK\Assemblies\Microsoft.SqlServer.ConnectionInfo.dll</HintPath>
@@ -76,6 +78,23 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="_LAST_BUILD\Microsoft.SqlServer.ConnectionInfo.dll" />
+    <None Include="_LAST_BUILD\Microsoft.SqlServer.Management.Sdk.Sfc.dll" />
+    <None Include="_LAST_BUILD\Microsoft.SqlServer.Smo.dll" />
+    <None Include="_LAST_BUILD\Microsoft.SqlServer.SqlEnum.dll" />
+    <None Include="_LAST_BUILD\MSSQLDump.exe" />
+    <None Include="_LAST_BUILD\System.Data.dll" />
+    <None Include="_LAST_BUILD\System.dll" />
+    <None Include="_LAST_BUILD\System.Xml.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="_MSSQL_DLLs\Microsoft.SqlServer.ConnectionInfo.dll" />
+    <None Include="_MSSQL_DLLs\Microsoft.SqlServer.Management.Sdk.Sfc.dll" />
+    <None Include="_MSSQL_DLLs\Microsoft.SqlServer.Smo.dll" />
+    <None Include="_MSSQL_DLLs\Microsoft.SqlServer.SqlClrProvider.dll" />
+    <None Include="_MSSQL_DLLs\Microsoft.SqlServer.SqlEnum.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
