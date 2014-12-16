@@ -21,23 +21,23 @@ namespace MSSQLDump {
         private static _DB DB = new _DB( HOST, USER, PASS );
 
         static void Main( string[] args ) {
-            if (args.Count() == 0) {
+            if ( args.Count() == 0 ) {
                 WriteHelp();
                 return;
             }
-            if (!ReadArguments( args ))
+            if ( !ReadArguments( args ) )
                 return;
             //Clean Dir
-            if (CleanDir && Directory.Exists( SavePath + Path.DirectorySeparatorChar + pathify( HOST ) )) {
+            if ( CleanDir && Directory.Exists( SavePath + Path.DirectorySeparatorChar + pathify( HOST ) ) ) {
                 Console.WriteLine( "Cleaning Directory '" + SavePath + Path.DirectorySeparatorChar + pathify( HOST ) + "'" );
                 var b = DeleteDirectory( SavePath + Path.DirectorySeparatorChar + pathify( HOST ) );
-                if (!b)
+                if ( !b )
                     return;
                 Console.Clear();
             }
 
             //Use DAC
-            if (UseDAC) {
+            if ( UseDAC ) {
                 Console.WriteLine( "Trying to enable DAC..." );
                 try {
                     DB.TryEnableDAC();
@@ -56,7 +56,7 @@ namespace MSSQLDump {
                 cn.Open();
                 cn.Close();
             }
-            catch (Exception ex) {
+            catch ( Exception ex ) {
                 Console.Clear();
                 Console.WriteLine( "ERROR!" );
                 Console.WriteLine( ex.Message );
@@ -71,13 +71,13 @@ namespace MSSQLDump {
             SavePath = csFile.CreateFolder( SavePath, pathify( HOST ) );
 
             //SERVER
-            var filePath = PrepareSqlFile( "*", "SERVER", HOST, SavePath, "" );
-            WriteSQLInner<Server>( "*", "SERVER", HOST, filePath, server, ScriptOption.DriAll );
+            var filePath = PrepareSqlFile( "*", "", "SERVER", HOST, SavePath, "" );
+            WriteSQLInner<Server>( "*", "", "SERVER", HOST, filePath, server, ScriptOption.DriAll );
 
-            foreach (var db in server.Databases.Cast<Database>().AsQueryable().Where( o => o.IsSystemObject == false )) {
-                if (db.IsSystemObject)
+            foreach ( var db in server.Databases.Cast<Database>().AsQueryable().Where( o => o.IsSystemObject == false ) ) {
+                if ( db.IsSystemObject )
                     continue;
-                if (DBs.Count() > 0 && !DBs.Contains( db.Name.ToLower() ))
+                if ( DBs.Count() > 0 && !DBs.Contains( db.Name.ToLower() ) )
                     continue;
                 var dbPath = csFile.CreateFolder( SavePath, pathify( db.Name ) );
 
@@ -85,133 +85,141 @@ namespace MSSQLDump {
                 Console.WriteLine( "DB: " + db.Name );
                 Console.WriteLine( "-------------------------------------------------" );
 
+                //var schema = "dbo";
                 var filename = "";
                 var objPath = "";
-                System.Collections.Specialized.StringCollection cs = new System.Collections.Specialized.StringCollection();
+                //System.Collections.Specialized.StringCollection cs = new System.Collections.Specialized.StringCollection();
                 //////////////////////////////////////////////////////////////////////////
                 //DB
                 var currentPath = dbPath;
-                filePath = PrepareSqlFile( db.Name, "DB", db.Name, currentPath, "" );
-                WriteSQLInner<Database>( db.Name, "DB", db.Name, filePath, db, ScriptOption.Default );
+                filePath = PrepareSqlFile( db.Name, "", "DB", db.Name, currentPath, "" );
+                WriteSQLInner<Database>( db.Name, "", "DB", db.Name, filePath, db, ScriptOption.Default );
+
+                //////////////////////////////////////////////////////////////////////////
+                //SCHEMA
+                foreach ( var schema2 in db.Schemas.Cast<Schema>().AsQueryable() ) {
+                    filePath = PrepareSqlFile( db.Name, "", "Schema", schema2.Name, currentPath, "" );
+                    WriteSQLInner<Schema>( db.Name, "", "Schema", schema2.Name, filePath, schema2, ScriptOption.Default );
+                }
 
                 //////////////////////////////////////////////////////////////////////////
                 //DB USER TYPES
-                currentPath = csFile.CreateFolder( dbPath, pathify( "UTYPE" ) );                
-                foreach (UserDefinedType o in db.UserDefinedTypes) {
-                    filePath = PrepareSqlFile( db.Name, "UTYPE", o.Name, currentPath, "" );
-                    WriteSQLInner<UserDefinedType>( db.Name, "UTYPE", o.Name, filePath, o, ScriptOption.Default );
+                currentPath = csFile.CreateFolder( dbPath, pathify( "UTYPE" ) );
+                foreach ( UserDefinedType o in db.UserDefinedTypes ) {
+                    filePath = PrepareSqlFile( db.Name, o.Schema, "UTYPE", o.Name, currentPath, "" );
+                    WriteSQLInner<UserDefinedType>( db.Name, o.Schema, "UTYPE", o.Name, filePath, o, ScriptOption.Default );
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 //DB TRIGGERS
                 currentPath = csFile.CreateFolder( dbPath, pathify( "TRIGGER" ) );
-                foreach (DatabaseDdlTrigger o in db.Triggers.Cast<DatabaseDdlTrigger>().AsQueryable().Where( o => o.IsSystemObject == false )) {
-                    filePath = PrepareSqlFile( db.Name, "TRIGGER", o.Name, currentPath, "" );
-                    WriteSQLInner<DatabaseDdlTrigger>( db.Name, "TRIGGER", o.Name, filePath, o, ScriptOption.Default );
+                foreach ( DatabaseDdlTrigger o in db.Triggers.Cast<DatabaseDdlTrigger>().AsQueryable().Where( o => o.IsSystemObject == false ) ) {
+                    filePath = PrepareSqlFile( db.Name, "dbo", "TRIGGER", o.Name, currentPath, "" );
+                    WriteSQLInner<DatabaseDdlTrigger>( db.Name, "dbo", "TRIGGER", o.Name, filePath, o, ScriptOption.Default );
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 //DB USER TABLE TYPES
-                currentPath = csFile.CreateFolder( dbPath, pathify( "TTYPES" ) );                
-                foreach (UserDefinedTableType o in db.UserDefinedTableTypes) {
-                    filePath = PrepareSqlFile( db.Name, "TTYPES", o.Name, currentPath, "" );
-                    WriteSQLInner<UserDefinedTableType>( db.Name, "TTYPES", o.Name, filePath, o, ScriptOption.Default );
+                currentPath = csFile.CreateFolder( dbPath, pathify( "TTYPES" ) );
+                foreach ( UserDefinedTableType o in db.UserDefinedTableTypes ) {
+                    filePath = PrepareSqlFile( db.Name, o.Schema, "TTYPES", o.Name, currentPath, "" );
+                    WriteSQLInner<UserDefinedTableType>( db.Name, o.Schema, "TTYPES", o.Name, filePath, o, ScriptOption.Default );
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 //DB FULLTEXT CATALOGS
                 currentPath = csFile.CreateFolder( dbPath, pathify( "FTC" ) );
-                foreach (FullTextCatalog o in db.FullTextCatalogs) {
-                    filePath = PrepareSqlFile( db.Name, "FTC", o.Name, currentPath, "" );
-                    WriteSQLInner<FullTextCatalog>( db.Name, "FTC", o.Name, filePath, o, ScriptOption.Default );
+                foreach ( FullTextCatalog o in db.FullTextCatalogs ) {
+                    filePath = PrepareSqlFile( db.Name, "dbo", "FTC", o.Name, currentPath, "" );
+                    WriteSQLInner<FullTextCatalog>( db.Name, "dbo", "FTC", o.Name, filePath, o, ScriptOption.Default );
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 //DB FULLTEXT STOPLISTS
                 currentPath = csFile.CreateFolder( dbPath, pathify( "FTL" ) );
-                foreach (FullTextStopList o in db.FullTextStopLists) {
-                    filePath = PrepareSqlFile( db.Name, "FTL", o.Name, currentPath, "" );
-                    WriteSQLInner<FullTextStopList>( db.Name, "FTL", o.Name, filePath, o, ScriptOption.Default );
+                foreach ( FullTextStopList o in db.FullTextStopLists ) {
+                    filePath = PrepareSqlFile( db.Name, "dbo", "FTL", o.Name, currentPath, "" );
+                    WriteSQLInner<FullTextStopList>( db.Name, "dbo", "FTL", o.Name, filePath, o, ScriptOption.Default );
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 //STORED PROCEDURES
-                currentPath = csFile.CreateFolder( dbPath, pathify( "PROCEDURE" ) );                
-                foreach (StoredProcedure o in db.StoredProcedures.Cast<StoredProcedure>().AsQueryable().Where( o => o.IsSystemObject == false )) {
-                    filePath = PrepareSqlFile( db.Name, "PROCEDURE", o.Name, currentPath, "" );
-                    WriteSQLInner<StoredProcedure>( db.Name, "PROCEDURE", o.Name, filePath, o, ScriptOption.Default );
+                currentPath = csFile.CreateFolder( dbPath, pathify( "PROCEDURE" ) );
+                foreach ( StoredProcedure o in db.StoredProcedures.Cast<StoredProcedure>().AsQueryable().Where( o => o.IsSystemObject == false ) ) {
+                    filePath = PrepareSqlFile( db.Name, o.Schema, "PROCEDURE", o.Name, currentPath, "" );
+                    WriteSQLInner<StoredProcedure>( db.Name, o.Schema, "PROCEDURE", o.Name, filePath, o, ScriptOption.Default );
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 //FUNCTIONS
                 currentPath = csFile.CreateFolder( dbPath, pathify( "FUNCTION" ) );
-                foreach (UserDefinedFunction o in db.UserDefinedFunctions.Cast<UserDefinedFunction>().Where( oo => oo.IsSystemObject == false )) {
-                    filePath = PrepareSqlFile( db.Name, "FUNCTION", o.Name, currentPath, "" );
-                    WriteSQLInner<UserDefinedFunction>( db.Name, "FUNCTION", o.Name, filePath, o, ScriptOption.Default );
+                foreach ( UserDefinedFunction o in db.UserDefinedFunctions.Cast<UserDefinedFunction>().Where( oo => oo.IsSystemObject == false ) ) {
+                    filePath = PrepareSqlFile( db.Name, o.Schema, "FUNCTION", o.Name, currentPath, "" );
+                    WriteSQLInner<UserDefinedFunction>( db.Name, o.Schema, "FUNCTION", o.Name, filePath, o, ScriptOption.Default );
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 //TABLE
-                foreach (Table o in db.Tables.Cast<Table>().AsQueryable().Where( o => o.IsSystemObject == false )) {
+                foreach ( Table o in db.Tables.Cast<Table>().AsQueryable().Where( o => o.IsSystemObject == false ) ) {
 
                     currentPath = csFile.CreateFolder( dbPath, pathify( "TABLE" ) );
-                    filePath = PrepareSqlFile( db.Name, "TABLE", o.Name, currentPath, "" );
-                    WriteSQLInner<Table>( db.Name, "TABLE", o.Name, filePath, o, ScriptOption.Default );
-                    WriteSQLInner<Table>( db.Name, "TABLE", o.Name, filePath, o, ScriptOption.Indexes );
-                    WriteSQLInner<Table>( db.Name, "TABLE", o.Name, filePath, o, ScriptOption.DriAll );
+                    filePath = PrepareSqlFile( db.Name, o.Schema, "TABLE", o.Name, currentPath, "" );
+                    WriteSQLInner<Table>( db.Name, o.Schema, "TABLE", o.Name, filePath, o, ScriptOption.Default );
+                    WriteSQLInner<Table>( db.Name, o.Schema, "TABLE", o.Name, filePath, o, ScriptOption.Indexes );
+                    WriteSQLInner<Table>( db.Name, o.Schema, "TABLE", o.Name, filePath, o, ScriptOption.DriAll );
 
 
                     //////////////////////////////////////////////////////////////////////////
                     //TABLE TRIGGERS
                     currentPath = csFile.CreateFolder( dbPath, pathify( "TRIGGER" ) );
-                    foreach (Trigger ot in o.Triggers.Cast<Trigger>().AsQueryable().Where( oo => oo.IsSystemObject == false )) {
-                        filePath = PrepareSqlFile( db.Name, "TRIGGER", ot.Name, currentPath, "TABLE_" + o.Name );
-                        WriteSQLInner<Trigger>( db.Name, "TRIGGER", ot.Name, filePath, ot, ScriptOption.Default );
+                    foreach ( Trigger ot in o.Triggers.Cast<Trigger>().AsQueryable().Where( oo => oo.IsSystemObject == false ) ) {
+                        filePath = PrepareSqlFile( db.Name, o.Schema, "TRIGGER", ot.Name, currentPath, "TABLE_" + o.Name );
+                        WriteSQLInner<Trigger>( db.Name, o.Schema, "TRIGGER", ot.Name, filePath, ot, ScriptOption.Default );
                     }
 
                     //////////////////////////////////////////////////////////////////////////
                     //TABLE STATISTICS
-                    if (ExportStatistics) {
+                    if ( ExportStatistics ) {
                         currentPath = csFile.CreateFolder( dbPath, pathify( "STATISTIC" ) );
-                        foreach (Statistic ot in o.Statistics.Cast<Statistic>().AsQueryable()) {
-                            filePath = PrepareSqlFile( db.Name, "STATISTIC", ot.Name, currentPath, "TABLE_" + o.Name );
-                            WriteSQLInner<Statistic>( db.Name, "STATISTIC", ot.Name,  filePath, ot, ScriptOption.OptimizerData );
+                        foreach ( Statistic ot in o.Statistics.Cast<Statistic>().AsQueryable() ) {
+                            filePath = PrepareSqlFile( db.Name, o.Schema, "STATISTIC", ot.Name, currentPath, "TABLE_" + o.Name );
+                            WriteSQLInner<Statistic>( db.Name, o.Schema, "STATISTIC", ot.Name, filePath, ot, ScriptOption.OptimizerData );
                         }
                     }
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 //VIEWS
-                foreach (View o in db.Views.Cast<View>().AsQueryable().Where( o => o.IsSystemObject == false )) {
+                foreach ( View o in db.Views.Cast<View>().AsQueryable().Where( o => o.IsSystemObject == false ) ) {
 
                     currentPath = csFile.CreateFolder( dbPath, pathify( "VIEW" ) );
-                    filePath = PrepareSqlFile( db.Name, "VIEW", o.Name, currentPath, "" );
-                    WriteSQLInner<View>( db.Name, "VIEW", o.Name, filePath, o, ScriptOption.Default );
-                    WriteSQLInner<View>( db.Name, "VIEW", o.Name, filePath, o, ScriptOption.Indexes );
-                    WriteSQLInner<View>( db.Name, "VIEW", o.Name,  filePath, o, ScriptOption.DriAllConstraints );
+                    filePath = PrepareSqlFile( db.Name, o.Schema, "VIEW", o.Name, currentPath, "" );
+                    WriteSQLInner<View>( db.Name, o.Schema, "VIEW", o.Name, filePath, o, ScriptOption.Default );
+                    WriteSQLInner<View>( db.Name, o.Schema, "VIEW", o.Name, filePath, o, ScriptOption.Indexes );
+                    WriteSQLInner<View>( db.Name, o.Schema, "VIEW", o.Name, filePath, o, ScriptOption.DriAllConstraints );
 
                     //////////////////////////////////////////////////////////////////////////
                     //VIEW TRIGGERS
                     currentPath = csFile.CreateFolder( dbPath, pathify( "TRIGGER" ) );
-                    foreach (Trigger ot in o.Triggers.Cast<Trigger>().AsQueryable().Where( oo => oo.IsSystemObject == false )) {
-                        filePath = PrepareSqlFile( db.Name, "TRIGGER", ot.Name, currentPath, "VIEW_" + o.Name );
-                        WriteSQLInner<Trigger>( db.Name, "TRIGGER", ot.Name, filePath, ot, ScriptOption.Default );
+                    foreach ( Trigger ot in o.Triggers.Cast<Trigger>().AsQueryable().Where( oo => oo.IsSystemObject == false ) ) {
+                        filePath = PrepareSqlFile( db.Name, o.Schema, "TRIGGER", ot.Name, currentPath, "VIEW_" + o.Name );
+                        WriteSQLInner<Trigger>( db.Name, o.Schema, "TRIGGER", ot.Name, filePath, ot, ScriptOption.Default );
                     }
 
                     //////////////////////////////////////////////////////////////////////////
                     //VIEW STATISTICS
-                    if (ExportStatistics) {
+                    if ( ExportStatistics ) {
                         currentPath = csFile.CreateFolder( dbPath, pathify( "STATISTIC" ) );
-                        foreach (Statistic ot in o.Statistics.Cast<Statistic>().AsQueryable()) {
-                            filePath = PrepareSqlFile( db.Name, "STATISTIC", ot.Name, currentPath, "VIEW_" + o.Name );
-                            WriteSQLInner<Statistic>( db.Name, "STATISTIC", ot.Name, filePath, ot, ScriptOption.OptimizerData );
+                        foreach ( Statistic ot in o.Statistics.Cast<Statistic>().AsQueryable() ) {
+                            filePath = PrepareSqlFile( db.Name, o.Schema, "STATISTIC", ot.Name, currentPath, "VIEW_" + o.Name );
+                            WriteSQLInner<Statistic>( db.Name, o.Schema, "STATISTIC", ot.Name, filePath, ot, ScriptOption.OptimizerData );
                         }
                     }
                 }
 
             }
 
-            if (UseDAC)
+            if ( UseDAC )
                 DB.TryDisableDAC();
 
             Console.WriteLine( Environment.NewLine );
@@ -249,25 +257,25 @@ namespace MSSQLDump {
         }
         private static bool ReadArguments( string[] args ) {
             try {
-                for (int i = 0; i < args.Count(); i++) {
-                    switch (args[i]) {
+                for ( int i = 0; i < args.Count(); i++ ) {
+                    switch ( args[i] ) {
                         case "-h":
-                            if (args[i + 1].Substring( 0, 1 ) != "-")
+                            if ( args[i + 1].Substring( 0, 1 ) != "-" )
                                 HOST = args[i + 1];
                             i++;
                             continue;
                         case "-u":
-                            if (args[i + 1].Substring( 0, 1 ) != "-")
+                            if ( args[i + 1].Substring( 0, 1 ) != "-" )
                                 USER = args[i + 1];
                             i++;
                             continue;
                         case "-p":
-                            if (args[i + 1].Substring( 0, 1 ) != "-")
+                            if ( args[i + 1].Substring( 0, 1 ) != "-" )
                                 PASS = args[i + 1];
                             i++;
                             continue;
                         case "-d":
-                            if (args[i + 1].Substring( 0, 1 ) != "-")
+                            if ( args[i + 1].Substring( 0, 1 ) != "-" )
                                 SavePath = args[i + 1];
                             i++;
                             continue;
@@ -281,7 +289,7 @@ namespace MSSQLDump {
                             UseDAC = true;
                             continue;
                         case "-b":
-                            if (args[i + 1].Substring( 0, 1 ) != "-") {
+                            if ( args[i + 1].Substring( 0, 1 ) != "-" ) {
                                 DBs = args[i + 1].Split( ',' ).ToList<string>().ConvertAll( d => d.ToLower() );
                             }
                             continue;
@@ -300,27 +308,28 @@ namespace MSSQLDump {
             }
             return true;
         }
-        private static bool WriteSQLInner<T>( string db, string objType, string objName, string filePath, T o, ScriptingOptions so ) where T : SqlSmoObject {
-
-            if (db == "*")
+        private static bool WriteSQLInner<T>( string db, string schema, string objType, string objName, string filePath, T o, ScriptingOptions so ) where T : SqlSmoObject {
+            if ( schema == "" )
+                schema = "dbo";
+            if ( db == "*" )
                 Console.WriteLine( objType + ": " + objName );
             else
-                Console.WriteLine( objType + ": " + db + "." + objName + " (" + so.ToString() + ")" );
+                Console.WriteLine( objType + ": " + db + "." + schema + "." + objName + " (" + so.ToString() + ")" );
 
 
             System.Collections.Specialized.StringCollection cs = new System.Collections.Specialized.StringCollection();
             try {
                 cs = (o as dynamic).Script( so );
             }
-            catch (Exception ex) {
-                if (UseDAC) {
+            catch ( Exception ex ) {
+                if ( UseDAC ) {
                     try {
                         DB.ChangeDB( db );
                         var dt = DB.GetDecryptedObject( objName, objType );
                         cs.Clear();
                         cs.Add( dt.Rows[0]["script"].ToString() );
                     }
-                    catch (Exception ex2) {
+                    catch ( Exception ex2 ) {
                         Console.WriteLine( ex2.Message );
                         return false;
                     }
@@ -331,34 +340,37 @@ namespace MSSQLDump {
                 }
             }
 
-            if (cs != null) {
-                foreach (var s in cs) {
-                    csFile.writeFile( filePath, s + ";" + Environment.NewLine, true );
+            if ( cs != null ) {
+                var ts = "";
+                foreach ( var s in cs )
+                    ts += s + Environment.NewLine;
+                if ( !String.IsNullOrWhiteSpace( ts.Trim() ) ) {
+                    csFile.writeFile( filePath, sqlComments( db, schema, objType, objName ), false );
+                    csFile.writeFile( filePath, ts + ";" + Environment.NewLine, true );
                 }
             }
 
             return true;
         }
-        private static string PrepareSqlFile( string db, string objType, string objName, string objPath, string filePrefix ) {
+        private static string PrepareSqlFile( string db, string schema, string objType, string objName, string objPath, string filePrefix ) {
             filePrefix = filePrefix != "" ? filePrefix + "_" : filePrefix;
-            var filePath = objPath + Path.DirectorySeparatorChar + pathify( filePrefix + objType + "_" + objName ) + ".sql";
-
-            csFile.writeFile( filePath, sqlComments( db, objType, objName ), false );
+            var filePath = objPath + Path.DirectorySeparatorChar + pathify( filePrefix + objType + "_" + schema + "_" + objName ) + ".sql";
 
             return filePath;
         }
         private static string pathify( string s ) {
-            foreach (var c in System.IO.Path.GetInvalidFileNameChars())
+            foreach ( var c in System.IO.Path.GetInvalidFileNameChars() )
                 s = s.Replace( c, '_' );
             return s;
         }
-        private static string sqlComments( string db, string type, string name ) {
+        private static string sqlComments( string db, string schema, string type, string name ) {
             var s = "--****************************************************" + Environment.NewLine;
             s += "--MS SQL schema dump v1 Beta" + Environment.NewLine;
             s += "--Latest Version on GitHub: http://github.com/georgekosmidis/mssql-schema-dump" + Environment.NewLine;
             s += "--George Kosmidis <www.georgekosmidis.com>" + Environment.NewLine;
             s += "-------------------------------------------------------" + Environment.NewLine;
             s += "--DB: " + db + Environment.NewLine;
+            s += "--SCHEMA: " + schema + Environment.NewLine;
             s += "--" + type + ": " + name + Environment.NewLine;
             s += "--" + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + Environment.NewLine;
             s += "--****************************************************" + Environment.NewLine + Environment.NewLine;
@@ -368,7 +380,7 @@ namespace MSSQLDump {
             string[] files = Directory.GetFiles( target_dir );
             string[] dirs = Directory.GetDirectories( target_dir );
 
-            foreach (string file in files) {
+            foreach ( string file in files ) {
                 try {
                     File.SetAttributes( file, FileAttributes.Normal );
                     File.Delete( file );
@@ -379,7 +391,7 @@ namespace MSSQLDump {
                     Console.WriteLine( "R: Retry, any other key to exit" );
 
                     var k = Console.ReadKey();
-                    if (k.Key.ToString().ToLower() == "r")
+                    if ( k.Key.ToString().ToLower() == "r" )
                         return DeleteDirectory( target_dir );
 
                     return false;
@@ -387,7 +399,7 @@ namespace MSSQLDump {
             }
             Thread.Sleep( 200 );
 
-            foreach (string dir in dirs) {
+            foreach ( string dir in dirs ) {
                 var b = DeleteDirectory( dir );
             }
 
@@ -400,7 +412,7 @@ namespace MSSQLDump {
                 Console.WriteLine( "R: Retry, any other key to exit" );
 
                 var k = Console.ReadKey();
-                if (k.Key.ToString().ToLower() == "r")
+                if ( k.Key.ToString().ToLower() == "r" )
                     return DeleteDirectory( target_dir );
 
                 return false;
