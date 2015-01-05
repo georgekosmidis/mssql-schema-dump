@@ -345,7 +345,8 @@ namespace MSSQLDump {
                 foreach ( var s in cs )
                     ts += s + Environment.NewLine;
                 if ( !String.IsNullOrWhiteSpace( ts.Trim() ) ) {
-                    csFile.writeFile( filePath, sqlComments( db, schema, objType, objName ), false );
+                    if ( !File.Exists( filePath ) )
+                        csFile.writeFile( filePath, sqlComments( db, schema, objType, objName ), true );
                     csFile.writeFile( filePath, ts + ";" + Environment.NewLine, true );
                 }
             }
